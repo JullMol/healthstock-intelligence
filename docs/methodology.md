@@ -16,7 +16,7 @@ This project follows a **business-first, data-second** methodology. Every techni
 
 ---
 
-## 2. Phase 2 — Pre-processing Methodology
+## 2. Phase 2 Pre-processing Methodology
 
 ### 2.1 Missing Value Treatment & Outliers
 
@@ -42,7 +42,7 @@ HRS = (0.35 × norm_ISPA) + (0.30 × norm_Diare) + (0.25 × norm_DBD) + (0.10 ×
 
 ---
 
-## 3. Phase 3 — Data Warehouse Methodology
+## 3. Phase 3 Data Warehouse Methodology
 
 ### Schema Design: Snowflake Schema
 
@@ -54,7 +54,7 @@ We chose **Snowflake Schema** to handle the hierarchical nature of location data
 
 ---
 
-## 4. Phase 4 — Analysis & Modeling Methodology
+## 4. Phase 4 Analysis & Modeling Methodology
 
 ### 4.1 K-Means Clustering (Segmentation)
 
@@ -102,7 +102,7 @@ Potential Lost Revenue = (Forecasted Demand - Actual Stock) × Avg Selling Price
 
 ---
 
-## 5. Phase 5 — Dashboard Design
+## 5. Phase 5 Dashboard Design
 
 The Power BI dashboard was designed with a **"Pyramid of Insight"** structure:
 1. **Executive Summary:** High-level KPIs and Map.

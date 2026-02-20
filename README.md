@@ -12,7 +12,7 @@
   </p>
 </p>
 
-> **Role:** Data Analyst & Data Scientist — Supply Chain & Commercial Analytics  
+> **Role:** Data Analyst & Data Scientist - Supply Chain & Commercial Analytics  
 > **Domain:** FMCG × Public Health × Supply Chain Analytics  
 > **Stack:** Python · SQL (PostgreSQL) · Power BI · Prophet · Scikit-learn
 
@@ -20,7 +20,7 @@
 
 ## 🚨 The Problem
 
-Unilever Indonesia spends billions on logistics — yet hygiene and nutrition products (soap, vitamins, sanitizers) consistently run out in the regions that need them most. The current distribution model is **reactive**: restocking only happens after stockout. Meanwhile, public health data reveals predictable disease outbreak patterns that directly drive demand spikes.
+Unilever Indonesia spends billions on logistics yet hygiene and nutrition products (soap, vitamins, sanitizers) consistently run out in the regions that need them most. The current distribution model is **reactive**: restocking only happens after stockout. Meanwhile, public health data reveals predictable disease outbreak patterns that directly drive demand spikes.
 
 **The result:** Lost revenue, missed public health impact, and an inefficient supply chain that doesn't respond to demand signals until it's too late.
 
@@ -52,7 +52,7 @@ Unilever Indonesia spends billions on logistics — yet hygiene and nutrition pr
 The clustering analysis segments all region-periods into 4 actionable quadrants based on **Health Risk Score vs Stock Availability**:
 
 <p align="center">
-  <img src="data/processed/analysis_03_clustering.png" alt="K-Means Clustering — 4 Quadrant Segmentation" width="700"/>
+  <img src="data/processed/analysis_03_clustering.png" alt="K-Means Clustering 4 Quadrant Segmentation" width="700"/>
 </p>
 
 | Cluster | Count | Priority | Action |
@@ -106,8 +106,8 @@ healthstock-intelligence/
 │   └── processed/                     # Cleaned data, results & visualizations
 │
 ├── 📁 notebooks/
-│   ├── 01_eda_fmcg.ipynb              # EDA — Sales & Demand Patterns
-│   ├── 02_eda_health.ipynb            # EDA — Regional Health Incidence
+│   ├── 01_eda_fmcg.ipynb              # EDA Sales & Demand Patterns
+│   ├── 02_eda_health.ipynb            # EDA Regional Health Incidence
 │   ├── 03_preprocessing.ipynb         # Data Cleaning & Integration
 │   ├── 04_dwh_etl.ipynb              # ETL Pipeline to PostgreSQL DWH
 │   ├── 05_analysis_clustering.ipynb   # K-Means Segmentation & Correlation
@@ -143,7 +143,7 @@ healthstock-intelligence/
   <img src="data/processed/eda_health_02_heatmap.png" alt="Health Risk Heatmap by Province" width="700"/>
 </p>
 
-### Data Warehouse — Snowflake Schema
+### Data Warehouse Snowflake Schema
 
 <p align="center">
   <img src="data/processed/dwh_snowflake_diagram.png" alt="DWH Snowflake Schema" width="700"/>
@@ -158,7 +158,7 @@ healthstock-intelligence/
 ### Forecast Decomposition
 
 <p align="center">
-  <img src="data/processed/forecast_02_components_PLCentral.png" alt="Prophet Trend Decomposition — PL-Central" width="700"/>
+  <img src="data/processed/forecast_02_components_PLCentral.png" alt="Prophet Trend Decomposition PL-Central" width="700"/>
 </p>
 
 ---
@@ -187,10 +187,10 @@ healthstock-intelligence/
 
 ## 🧠 Methodology Highlights
 
-- **Health Risk Score (HRS):** Custom-engineered feature (0–100) — weighted sum of normalized BPS disease incidence data per province
+- **Health Risk Score (HRS):** Custom-engineered feature (0–100) weighted sum of normalized BPS disease incidence data per province
 - **K-Means Clustering:** Segments regions into 4 strategic quadrants (High/Low Risk × High/Low Stock) for actionable prioritization
 - **Facebook Prophet:** Time-series forecasting with automatic seasonality detection (rainy season, Ramadan) for 3-month stock demand prediction
-- **Revenue Gap Analysis:** `(Predicted Demand − Actual Stock) × Avg Selling Price` — quantifies lost opportunity in rupiah
+- **Revenue Gap Analysis:** `(Predicted Demand − Actual Stock) × Avg Selling Price` quantifies lost opportunity in rupiah
 
 > 📖 Full methodology & decision log: [docs/methodology.md](docs/methodology.md)
 
@@ -204,5 +204,5 @@ healthstock-intelligence/
 ---
 
 <p align="center">
-  <em>End-to-end data analytics & data science capstone — from business understanding to predictive modeling & interactive dashboard.</em>
+  <em>End-to-end data analytics & data science capstone from business understanding to predictive modeling & interactive dashboard.</em>
 </p>

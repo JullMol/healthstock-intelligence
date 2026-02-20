@@ -1,5 +1,5 @@
 # Phase 1: Business Understanding
-## HealthStock Intelligence — Business Case Document
+## HealthStock Intelligence Business Case Document
 
 > **Version:** 2.0  
 > **Status:** ✅ Complete  
@@ -11,7 +11,7 @@
 
 This project addresses a critical operational inefficiency in Unilever Indonesia's FMCG distribution network: the misalignment between regional public health demand signals and product stock availability. By integrating sales data with regional disease incidence data, we build a predictive intelligence system that enables proactive, health-aware supply chain decisions.
 
-**Key Outcome:** The system successfully identified **2 priority regions** with critical stock gaps, forecasted demand with **< 9% MAPE**, and quantified potential lost revenue — enabling data-driven stock reallocation decisions.
+**Key Outcome:** The system successfully identified **2 priority regions** with critical stock gaps, forecasted demand with **< 9% MAPE**, and quantified potential lost revenue enabling data-driven stock reallocation decisions.
 
 ---
 
@@ -23,7 +23,7 @@ Fast-Moving Consumer Goods (FMCG) companies like Unilever operate on thin margin
 
 ### 2.2 The Gap We're Addressing
 
-Public health data from BPS (Badan Pusat Statistik) and Kemenkes consistently shows **seasonal and regional patterns** in communicable disease outbreaks — ISPA (acute respiratory infections), diarrhea, and dengue fever follow predictable cycles correlated with rainfall, population density, and sanitation access.
+Public health data from BPS (Badan Pusat Statistik) and Kemenkes consistently shows **seasonal and regional patterns** in communicable disease outbreaks ISPA (acute respiratory infections), diarrhea, and dengue fever follow predictable cycles correlated with rainfall, population density, and sanitation access.
 
 However, Unilever's distribution model currently does **not incorporate health risk signals** as a demand driver. This creates a structural blind spot:
 
@@ -87,7 +87,7 @@ This project is structured to answer three primary business questions. Below are
 
 - **Method:** Facebook Prophet with seasonal regressors
 - **Result:** 3-month demand forecast generated for all 3 regions
-- **Accuracy:** MAPE ranges from 5.78% to 8.89% — well within the <15% target
+- **Accuracy:** MAPE ranges from 5.78% to 8.89% well within the <15% target
 
 <p align="center">
   <img src="../data/processed/forecast_01_by_region.png" alt="Demand Forecast by Region" width="650"/>
@@ -101,7 +101,7 @@ This project is structured to answer three primary business questions. Below are
 
 ---
 
-## 5. Success Metrics — Final Assessment
+## 5. Success Metrics Final Assessment
 
 | Metric | Target | Actual | Status |
 |---|---|---|:---:|
