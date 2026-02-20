@@ -1,0 +1,6 @@
+category_id,category_name,is_health_related,description
+1,Juice,True,Dairy products
+2,Milk,True,Fruit-based beverages
+3,ReadyMeal,False,Ready-to-eat meal products
+4,SnackBar,False,Confectionery and cereal bars
+5,Yogurt,False,Cultured dairy products

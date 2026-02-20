@@ -1,0 +1,5 @@
+region_id,pl_region,island_group_id,region_description
+1,PL-West,1,Sumatera & West Kalimantan distribution zone
+2,PL-Central,2,"Java, Bali & Nusa Tenggara distribution zone"
+3,PL-North,3,Kalimantan & Sulawesi distribution zone
+4,PL-South,4,Maluku & Papua distribution zone
