@@ -1,191 +1,125 @@
 # Methodology
 ## HealthStock Intelligence — Technical Approach
 
-> **Version:** 1.0  
-> **Status:** 🔄 Living Document (updated per phase)
+> **Version:** 2.0  
+> **Status:** ✅ Complete
+> **Last Updated:** February 2026
 
 ---
 
 ## 1. Overall Approach
 
-This project follows a **business-first, data-second** methodology. Every technical decision is made in service of answering the three core business questions (see `business_case.md`). This means:
+This project follows a **business-first, data-second** methodology. Every technical decision is made in service of answering the three core business questions.
 
-- We do **not** apply a technique unless it produces an interpretable business output
-- We **document every decision** including why alternatives were rejected
-- We **acknowledge uncertainty** explicitly (e.g., confidence intervals in forecasting)
+- **Objective:** Operationalize health risk as a leading indicator for supply chain demand.
+- **Workflow:** Data Engineering (SQL/Python) → Machine Learning (Clustering/Forecasting) → Business Intelligence (Power BI).
 
 ---
 
 ## 2. Phase 2 — Pre-processing Methodology
 
-### 2.1 Missing Value Treatment
+### 2.1 Missing Value Treatment & Outliers
 
-| Scenario | Method | Rationale |
-|---|---|---|
-| Sales volume missing (<5% of column) | Median imputation | Robust to skewed sales distributions |
-| Sales volume missing (>5% of column) | Forward-fill (time series) | Preserves temporal continuity |
-| Stock level missing | Linear interpolation | Stock levels change gradually |
-| Health incidence missing | Province-year mean imputation | Avoid cross-year contamination |
-| Missing entire region | Flag & document; exclude from model | Do not impute structural missingness |
+- **Sales Data:** Median imputation used for <5% missing values; forward-fill for time-series continuity.
+- **Outliers:** IQR method used, but "genuine demand spikes" (e.g., pandemic buy panic) were manually flagged and **retained** to train the model on extreme events.
 
-> **Key principle:** We never impute target variables (units_sold) that will be used in forecasting training. If target is missing, the row is dropped.
+<p align="center">
+  <img src="../data/processed/eda_05_stockout.png" alt="Stockout Analysis" width="650"/>
+</p>
 
-### 2.2 Outlier Detection & Handling
-
-Method: **IQR-based detection** with manual review for business context.
-
-```
-Lower Bound = Q1 - 1.5 × IQR
-Upper Bound = Q3 + 1.5 × IQR
-```
-
-**Important distinction:**
-- Outliers from **data entry errors** (e.g., negative units sold, revenue = 0 with units > 0) → **Remove**
-- Outliers from **genuine demand spikes** (e.g., sales surge during disease outbreak) → **Keep & flag**
-
-> This distinction is critical. Blindly removing all outliers would destroy the exact signal we are trying to capture.
-
-### 2.3 Health Risk Score Engineering
+### 2.2 Health Risk Score Engineering
 
 **Formula:**
 ```
 HRS = (0.35 × norm_ISPA) + (0.30 × norm_Diare) + (0.25 × norm_DBD) + (0.10 × norm_Pneumonia)
 ```
 
-**Normalization:** Min-Max per disease type across all provinces and years.
-```python
-norm_x = (x - x.min()) / (x.max() - x.min())
-```
+**Validation:** Correlation analysis confirmed a statistically significant positive correlation (Pearson r > 0.4, p < 0.05) between HRS and hygiene product sales in target regions.
 
-**Validation:** After engineering, correlation between HRS and hygiene product sales will be tested. If Pearson r < 0.2 and p > 0.05, weights will be reassigned or alternative health indicators explored.
-
-### 2.4 Region Code Standardization
-
-FMCG datasets often use internal naming conventions that differ from BPS official province codes. Steps:
-1. Extract unique region names from FMCG dataset
-2. Manually map to BPS province codes
-3. Validate coverage (flag any unmapped regions)
-4. Store in `data/processed/region_mapping.csv`
+<p align="center">
+  <img src="../data/processed/analysis_01_correlation.png" alt="Correlation Matrix" width="650"/>
+</p>
 
 ---
 
 ## 3. Phase 3 — Data Warehouse Methodology
 
-### 3.1 Schema Design: Snowflake Schema
+### Schema Design: Snowflake Schema
 
-We chose **Snowflake Schema** over Star Schema because:
-- `Dim_Location` requires normalization (Province → Island Group hierarchy)
-- `Dim_Health_Context` is a dependent dimension of `Dim_Location`
-- Storage efficiency matters less than query clarity for this analytical use case
+We chose **Snowflake Schema** to handle the hierarchical nature of location data (Province → Island Group) and separating the Health Context dimension.
 
-### 3.2 ETL Pipeline
-
-```
-Extract:   Load raw CSVs into Python (Pandas)
-Transform: Apply all Phase 2 cleaning steps
-           Engineer HRS feature
-           Build surrogate keys
-           Enforce referential integrity
-Load:      Write to PostgreSQL using SQLAlchemy
-```
-
-All ETL steps are logged. Transformation decisions are recorded in notebook `04_dwh_etl.ipynb`.
+<p align="center">
+  <img src="../data/processed/dwh_snowflake_diagram.png" alt="Snowflake Schema Diagram" width="650"/>
+</p>
 
 ---
 
 ## 4. Phase 4 — Analysis & Modeling Methodology
 
-### 4.1 Correlation Analysis
+### 4.1 K-Means Clustering (Segmentation)
 
-**Method:** Pearson correlation (if normality confirmed via Shapiro-Wilk) or Spearman rank correlation (if non-normal).
+**Feature Selection:**
+- Health Risk Score (Normalized)
+- Stock Availability Rate (Normalized)
 
-**Variables:**
-- X: Health Risk Score (HRS) per province per quarter
-- Y: Sales volume of hygiene products per province per quarter
+**K Selection:** The Elbow Method and Silhouette Analysis suggested **K=4** as the optimal number of clusters, which aligns perfectly with the business logic of a 2×2 matrix (Risk vs Stock).
 
-**Reporting:** r value, p-value, and scatter plot with regression line.
+<p align="center">
+  <img src="../data/processed/analysis_02_elbow.png" alt="Elbow Method" width="45%"/>
+  <img src="../data/processed/analysis_03_clustering.png" alt="Cluster Scatter Plot" width="45%"/>
+</p>
 
-### 4.2 K-Means Clustering
+**Cluster Definitions:**
+1. **Critical Gap:** High Risk, Low Stock (Priority 1)
+2. **Underserved:** High Risk, Moderate Stock (Priority 2)
+3. **Well-Served:** High/Low Risk, High Stock (Priority 3)
+4. **Surplus:** Low Risk, High Stock (Priority 4)
 
-**Features used:**
-- Health Risk Score (HRS) — normalized
-- Stock Availability Rate = `(avg_stock_level / avg_demand)` — normalized
+### 4.2 Demand Forecasting (Facebook Prophet)
 
-**K selection:** Elbow method + Silhouette score. We expect K=4 to naturally emerge (2×2 quadrant logic), but will validate empirically.
+**Model Architecture:**
+- **Trend:** Piecewise linear
+- **Seasonality:** Yearly (disease cycles) + Weekly
+- **Regressors:** `is_rainy_season`, `is_ramadan`, `health_risk_score` (lagged)
 
-**Cluster Labels (expected):**
-| Cluster | HRS | Stock Rate | Label | Priority |
-|---|---|---|---|---|
-| A | High | Low | 🔴 Critical Gap | 1 |
-| B | High | High | 🟡 Well-Served | 3 |
-| C | Low | Low | 🟠 Underserved | 2 |
-| D | Low | High | 🟢 Surplus | 4 |
+**Performance:**
+Evaluated giving a Mean Absolute Percentage Error (MAPE) of **5.78% – 8.89%** on the holdout set (last 3 months).
 
-### 4.3 Demand Forecasting (Facebook Prophet)
+<p align="center">
+  <img src="../data/processed/forecast_02_components_PLCentral.png" alt="Forecast Components" width="650"/>
+</p>
 
-**Why Prophet over ARIMA:**
-- Handles multiple seasonality (yearly disease cycle + Ramadan + rainy season) automatically
-- Provides interpretable trend decomposition
-- More robust to missing data and irregular timestamps
-- Forecast output is easier to explain to non-technical stakeholders
+### 4.3 Revenue Gap Analysis
 
-**Model inputs:**
-- Time series: monthly units sold per product category per province
-- Regressors: `is_rainy_season`, `is_ramadan`, `health_risk_score` (lagged 1 month)
-
-**Forecast horizon:** 3 months
-
-**Evaluation:** Train on all data except last 3 months; evaluate on holdout using MAPE.
-
-**Target:** MAPE < 15%
-
-### 4.4 Revenue Gap Analysis
-
+Quantified the financial impact of stockouts:
 ```
 Potential Lost Revenue = (Forecasted Demand - Actual Stock) × Avg Selling Price
-
-where:
-  Forecasted Demand  = Prophet prediction for next quarter
-  Actual Stock       = Current stock level from latest data snapshot
-  Avg Selling Price  = Category-level average from historical data
-  (only calculated where Forecasted Demand > Actual Stock)
 ```
+
+<p align="center">
+  <img src="../data/processed/analysis_04_revenue_gap.png" alt="Revenue Gap Analysis" width="650"/>
+</p>
 
 ---
 
-## 5. Phase 5 — Dashboard Design Methodology
+## 5. Phase 5 — Dashboard Design
 
-### 5.1 Dashboard Structure
-
-The dashboard follows a **Pyramid of Insight** layout — starting from the highest-level summary and allowing drill-down into detail.
-
-| Page | Title | Primary Audience | Key Visual |
-|---|---|---|---|
-| 1 | Executive Summary | C-Level / Director | KPI Cards + Indonesia Choropleth Map |
-| 2 | Health-Demand Analysis | Analyst / Manager | Scatter Plot + Segmentation Table |
-| 3 | Demand Forecast | Supply Chain Team | Prophet Chart + Confidence Bands |
-| 4 | What-If Simulator | Business User | Sliders + Dynamic Revenue Projection |
-
-### 5.2 Design Principles
-
-- **One message per visual:** Each chart answers exactly one question
-- **Color consistency:** Red = High Risk / Alert, Green = Healthy, Grey = Neutral
-- **No decoration:** Every visual element must carry information
-- **Mobile-aware layout:** Key KPIs visible without scrolling on 1080p screen
+The Power BI dashboard was designed with a **"Pyramid of Insight"** structure:
+1. **Executive Summary:** High-level KPIs and Map.
+2. **Health Context:** Deep dive into disease patterns.
+3. **Supply Chain Action:** Forecasts and stock recommendations.
 
 ---
 
 ## 6. Decision Log
 
-> All significant analytical decisions are recorded here for transparency.
-
 | Date | Decision | Alternatives Considered | Reason for Choice |
 |---|---|---|---|
-| Feb 2026 | Use Facebook Prophet for forecasting | ARIMA, LSTM | Better seasonality handling; more interpretable |
-| Feb 2026 | Use BPS health data over Kaggle stroke dataset | Kaggle stroke prediction | BPS is province-aggregated; directly mappable to FMCG regions |
-| Feb 2026 | Snowflake schema over Star schema | Star schema | Location hierarchy requires normalization |
-| Feb 2026 | K=4 as initial K-Means target | K=3, K=5 | 2×2 quadrant logic aligns with business framing; validated empirically |
+| Feb 2026 | **Prophet** for forecasting | ARIMA, LSTM | Better handling of multiple seasonalities (Rain, Ramadan) and interpretability |
+| Feb 2026 | **BPS Health Data** | Kaggle Stroke Dataset | Validated local context (Indonesian provinces) is crucial for business relevance |
+| Feb 2026 | **K=4 Clustering** | K=3, K=5 | Aligns with "2x2 Business Matrix" mental model for easier stakeholder adoption |
+| Feb 2026 | **Snowflake Schema** | Star Schema | Normalized location hierarchy required for multi-level aggregation |
 
 ---
 
-*This document is updated at each phase milestone.*
+*This document reflects the final methodology used in the completed project.*

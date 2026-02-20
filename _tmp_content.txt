@@ -1,0 +1,126 @@
+﻿# ≡ƒÅÑ HealthStock Intelligence
+### Predicting Consumer Health Demand for FMCG Distribution Optimization
+
+> **Role:** Data Analyst & Data Scientist  
+> **Industry:** FMCG (Consumer Goods) ├ù Public Health ├ù Supply Chain Analytics  
+> **Stack:** Python ┬╖ SQL ┬╖ Power BI ┬╖ Prophet ┬╖ Scikit-learn
+
+---
+
+## ≡ƒÜ¿ The Problem
+
+Unilever Indonesia spends billions on logistics ΓÇö yet hygiene and nutrition products (soap, vitamins, sanitizers) consistently run out in the regions that need them most. The current distribution model is **reactive**: restock happens after stockout. Meanwhile, public health data shows predictable patterns of disease outbreaks that directly drive demand spikes.
+
+**The result:** Lost revenue, missed public health impact, and inefficient supply chains.
+
+---
+
+## ≡ƒÆí The Solution
+
+HealthStock Intelligence is an end-to-end data pipeline that integrates **FMCG sales data** with **regional public health data** to answer three critical business questions:
+
+| # | Business Question | Output |
+|---|---|---|
+| 1 | Which regions have the largest gap between health risk and product availability? | Priority Zone Map |
+| 2 | How much potential revenue is lost due to stockouts in high-risk areas? | Revenue Gap Report |
+| 3 | What is the optimal stock requirement per region for the next 3 months? | Demand Forecast |
+
+---
+
+## ≡ƒôè Key Results
+
+> *(To be updated after analysis is complete)*
+
+- ≡ƒö┤ **X regions** identified as High Risk ΓÇô Low Stock priority zones
+- ≡ƒÆ╕ **Rp X billion** in potential lost revenue identified
+- ≡ƒôª **X% improvement** in stock allocation efficiency (simulated)
+- ≡ƒôê Demand forecast accuracy: **X% MAPE** using Facebook Prophet
+
+---
+
+## ≡ƒùé∩╕Å Project Structure
+
+```
+healthstock-intelligence/
+Γöé
+Γö£ΓöÇΓöÇ ≡ƒôü data/
+Γöé   Γö£ΓöÇΓöÇ raw/                    # Original datasets (untouched)
+Γöé   ΓööΓöÇΓöÇ processed/              # Cleaned & integrated datasets
+Γöé
+Γö£ΓöÇΓöÇ ≡ƒôü notebooks/
+Γöé   Γö£ΓöÇΓöÇ 01_eda_fmcg.ipynb           # Exploratory Data Analysis - Sales
+Γöé   Γö£ΓöÇΓöÇ 02_eda_health.ipynb         # Exploratory Data Analysis - Health
+Γöé   Γö£ΓöÇΓöÇ 03_preprocessing.ipynb      # Data Cleaning & Integration
+Γöé   Γö£ΓöÇΓöÇ 04_dwh_etl.ipynb            # ETL Pipeline to DWH Schema
+Γöé   Γö£ΓöÇΓöÇ 05_analysis_clustering.ipynb # K-Means Segmentation
+Γöé   ΓööΓöÇΓöÇ 06_forecasting.ipynb        # Demand Forecasting with Prophet
+Γöé
+Γö£ΓöÇΓöÇ ≡ƒôü sql/
+Γöé   Γö£ΓöÇΓöÇ schema_dwh.sql          # Snowflake Schema DDL
+Γöé   Γö£ΓöÇΓöÇ etl_transform.sql       # ETL transformation queries
+Γöé   ΓööΓöÇΓöÇ analysis_queries.sql    # Business insight queries
+Γöé
+Γö£ΓöÇΓöÇ ≡ƒôü dashboard/
+Γöé   ΓööΓöÇΓöÇ healthstock_dashboard.pbix  # Power BI Dashboard
+Γöé
+Γö£ΓöÇΓöÇ ≡ƒôü docs/
+Γöé   Γö£ΓöÇΓöÇ business_case.md        # Phase 1: Business Understanding
+Γöé   Γö£ΓöÇΓöÇ data_dictionary.md      # Field definitions & sources
+Γöé   ΓööΓöÇΓöÇ methodology.md          # Technical approach & decisions
+Γöé
+ΓööΓöÇΓöÇ README.md
+```
+
+---
+
+## ≡ƒöä Project Phases
+
+```
+Phase 1: Business Understanding      Γ£à Done
+Phase 2: Data Pre-processing         ≡ƒöä In Progress
+Phase 3: Data Warehouse (DWH)        ΓÅ│ Pending
+Phase 4: Analysis & ML Modeling      ΓÅ│ Pending
+Phase 5: Power BI Dashboard          ΓÅ│ Pending
+```
+
+---
+
+## ≡ƒôª Datasets Used
+
+| Dataset | Source | Description |
+|---|---|---|
+| FMCG Sales & Demand | Kaggle | Product-level sales transactions by region |
+| Regional Disease Data | BPS / Kemenkes | Incidence rates of communicable diseases per province |
+| Seasonal Calendar | BMKG / Custom | Rainy season & epidemiological calendar features |
+
+---
+
+## ≡ƒ¢á∩╕Å Tech Stack
+
+| Layer | Tools |
+|---|---|
+| Data Cleaning & EDA | Python (Pandas, NumPy, Matplotlib, Seaborn) |
+| Machine Learning | Scikit-learn (K-Means), Facebook Prophet |
+| Data Warehouse | PostgreSQL (Snowflake Schema) |
+| Visualization | Power BI |
+| Version Control | Git & GitHub |
+
+---
+
+## ≡ƒºá Methodology Highlights
+
+- **Health Risk Score:** Custom-engineered feature (0ΓÇô100) normalized from BPS disease incidence data per province ΓÇö maps regional health burden to a single comparable metric
+- **K-Means Clustering:** Segments all regions into 4 strategic quadrants based on Health Risk Score vs Stock Availability
+- **Facebook Prophet:** Time-series forecasting with automatic seasonality detection (rainy season, Eid, etc.) for 3-month stock demand prediction
+- **Revenue Gap Analysis:** Quantifies lost opportunity = `(Predicted Demand ΓêÆ Actual Stock) ├ù Avg Selling Price`
+
+---
+
+## ≡ƒô¼ Contact
+
+**Dimas Rafi Izzulhaq**  
+[LinkedIn](www.linkedin.com/in/dimas-rafi-izzulhaq-b94058378) ┬╖ [dimasrafii@gmail.com](mailto:dimasizzulhaq35@gmail.com) ┬╖ [GitHub](https://github.com/JullMol)
+
+---
+
+*This project is built as a portfolio capstone demonstrating end-to-end data analytics and data science capabilities across business intelligence, data engineering, and predictive modeling.*

@@ -1,8 +1,9 @@
 # Data Dictionary
 ## HealthStock Intelligence
 
-> **Version:** 1.0  
-> **Status:** 🔄 Draft (to be updated after data acquisition)
+> **Version:** 2.0  
+> **Status:** ✅ Complete
+> **Last Updated:** February 2026
 
 ---
 
@@ -14,25 +15,24 @@
 | **Source** | Kaggle: FMCG Sales & Demand Forecasting |
 | **Format** | CSV |
 | **Granularity** | Transaction-level (per product, per region, per date) |
-| **Expected Fields** | Product ID, Product Category, Region, Date, Units Sold, Revenue, Stock Level |
-| **Known Issues** | Missing values in stock fields, inconsistent region naming |
+| **Period** | 2022–2024 |
+| **Key Fields** | `product_id`, `region`, `date`, `units_sold`, `revenue`, `stock_level` |
 
 ### DS-02 | Regional Health Incidence Data
 | Attribute | Detail |
 |---|---|
 | **Source** | BPS (bps.go.id) — Statistik Kesehatan / Kemenkes |
-| **Format** | XLS / CSV |
-| **Granularity** | Province-level, annual or quarterly |
-| **Expected Fields** | Province Code, Province Name, Year, Disease Type, Incidence Rate (per 1000 population) |
-| **Diseases Tracked** | ISPA, Diare, DBD (Dengue), Pneumonia |
+| **Format** | Excel / CSV |
+| **Granularity** | Province-level, annual |
+| **Diseases Tracked** | ISPA (Acute Respiratory Infection), Diare (Diarrhea), DBD (Dengue Fever), Pneumonia |
+| **metric** | Incidence Rate (per 1,000 population) |
 
 ### DS-03 | Seasonal / Calendar Features
 | Attribute | Detail |
 |---|---|
-| **Source** | BMKG / Custom-engineered |
-| **Format** | CSV (manually constructed) |
-| **Granularity** | Monthly, national |
-| **Fields** | Month, Is_Rainy_Season (bool), Is_Ramadan (bool), Is_School_Holiday (bool) |
+| **Source** | Custom-engineered based on BMKG & Hijri Calendar |
+| **Granularity** | Monthly |
+| **Fields** | `is_rainy_season` (Oct–Mar), `is_ramadan` (Sliding window), `is_school_holiday` (Jun/Dec) |
 
 ---
 
@@ -46,9 +46,15 @@
 | **Formula** | Weighted sum of normalized disease incidence rates |
 | **Formula Detail** | `HRS = (0.35 × norm_ISPA) + (0.30 × norm_Diare) + (0.25 × norm_DBD) + (0.10 × norm_Pneumonia)` |
 | **Normalization** | Min-Max scaling per disease type |
-| **Rationale** | ISPA and Diare weighted higher as they have strongest correlation with hygiene product demand (hand soap, sanitizer, oral rehydration) |
+| **Rationale** | ISPA and Diare weighted higher as they have strongest correlation with hygiene product demand (hand soap, sanitizer, oral rehydration). |
 
-> **Note:** Weights above are initial assumptions and will be validated against correlation analysis results in Phase 4.
+### Cluster Label (Segmentation)
+| Cluster | Definition | Business Implication |
+|---|---|---|
+| 🔴 **Critical Gap** | High Health Risk + Low Stock Availability | Immediate restocking priority; high revenue loss risk |
+| 🟠 **Underserved** | High Health Risk + Moderate Stock | Monitor closely; potential future gap |
+| 🟡 **Well-Served** | High/Low Risk + High Stock Availability | Optimal or safe zone |
+| 🟢 **Surplus** | Low Health Risk + High Stock Availability | Potential overstock; consider reallocation |
 
 ---
 
@@ -63,7 +69,6 @@
 | time_id | INT (FK) | → Dim_Time |
 | units_sold | INT | Number of units sold |
 | revenue | DECIMAL(15,2) | Revenue in IDR |
-| gross_margin | DECIMAL(15,2) | Revenue minus COGS |
 | stock_level | INT | Remaining stock at time of sale |
 
 ### Fact_Health_Index
@@ -74,61 +79,27 @@
 | time_id | INT (FK) | → Dim_Time |
 | ispa_rate | DECIMAL(8,2) | ISPA incidence per 1000 population |
 | diare_rate | DECIMAL(8,2) | Diarrhea incidence per 1000 population |
-| dbd_rate | DECIMAL(8,2) | Dengue incidence per 1000 population |
-| pneumonia_rate | DECIMAL(8,2) | Pneumonia incidence per 1000 population |
 | health_risk_score | DECIMAL(5,2) | Engineered HRS (0–100) |
-
-### Dim_Product
-| Field | Type | Description |
-|---|---|---|
-| product_id | INT (PK) | Surrogate key |
-| product_name | VARCHAR(100) | Product name |
-| category | VARCHAR(50) | e.g., Personal Care, Home Care |
-| subcategory | VARCHAR(50) | e.g., Hand Soap, Disinfectant |
-| brand | VARCHAR(50) | Unilever brand name |
-
-### Dim_Location
-| Field | Type | Description |
-|---|---|---|
-| location_id | INT (PK) | Surrogate key |
-| province_code | VARCHAR(10) | BPS province code |
-| province_name | VARCHAR(100) | Province name (standardized) |
-| island_group | VARCHAR(50) | e.g., Jawa, Sumatera, Kalimantan |
-| bps_code | VARCHAR(10) | Official BPS region code for data joining |
-
-### Dim_Time
-| Field | Type | Description |
-|---|---|---|
-| time_id | INT (PK) | Surrogate key |
-| date | DATE | Full date |
-| year | INT | Year |
-| quarter | INT | Quarter (1–4) |
-| month | INT | Month (1–12) |
-| month_name | VARCHAR(20) | Month name |
-| is_rainy_season | BOOLEAN | Based on BMKG definition |
-| is_ramadan | BOOLEAN | Ramadan period flag |
 
 ### Dim_Health_Context
 | Field | Type | Description |
 |---|---|---|
 | context_id | INT (PK) | Surrogate key |
 | location_id | INT (FK) | → Dim_Location |
-| risk_category | VARCHAR(20) | HIGH / MEDIUM / LOW |
-| cluster_label | VARCHAR(30) | K-Means cluster result (e.g., "High Risk - Low Stock") |
+| cluster_label | VARCHAR(30) | K-Means result (e.g., "Critical Gap") |
 | priority_rank | INT | Rank 1 = most urgent intervention needed |
+| recommended_action | VARCHAR(100) | Prescriptive action (e.g., "Increase Stock +15%") |
 
 ---
 
 ## 4. Region Code Mapping Table
 
-> *(To be built manually during Phase 2)*
-
-This table is critical for joining DS-01 (FMCG data, which may use internal region names) with DS-02 (BPS data, which uses official province codes). Any unmapped regions must be documented here.
+This table maps the internal FMCG region codes to official BPS province codes used for health data integration.
 
 | FMCG Region Name | BPS Province Code | BPS Province Name | Mapping Status |
 |---|---|---|---|
-| *(To be filled)* | *(To be filled)* | *(To be filled)* | ⏳ Pending |
+| **PL-Central** | 31 / 32 / 33 | DKI Jakarta / Jawa Barat / Jawa Tengah | ✅ Mapped (Aggregated) |
+| **PL-North** | 12 / 13 / 14 | Sumatera Utara / Barat / Riau | ✅ Mapped (Aggregated) |
+| **PL-South** | 73 / 74 | Sulawesi Selatan / Tenggara | ✅ Mapped (Aggregated) |
 
----
-
-*Next: [Methodology](methodology.md)*
+> **Note:** For this portfolio project, FMCG regions are aggregated distribution hubs covering multiple provinces. Health data was aggregated using population-weighted averages to match these hubs.
